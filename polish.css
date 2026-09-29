@@ -1,0 +1,960 @@
+/* ============================================================
+ * polish.css · 个人主页美化层（v2 · 深色液态玻璃风格）
+ * ------------------------------------------------------------
+ * 独立美化文件，放在 lesson-03-task.css 之后加载，
+ * 不改动课程任务文件（styles.css / lesson-03-task.css）的结构。
+ * 想对比效果时，只需删掉 index.html 里这一行引用即可还原。
+ *
+ * 设计思路：深色墨绿背景 + 青绿/香槟金点缀，
+ * 卡片使用「液态玻璃」质感（半透明 + backdrop-filter 模糊 +
+ * 半透明白描边 + 内高光），并加入统一的悬停发光动效。
+ *
+ * 换色方法：只改 :root 里的几个变量，全站配色随之更新。
+ * ============================================================ */
+
+/* ---------- 1. 字体：启用本地思源宋体（400 常规 / 600 半粗） ---------- */
+@font-face {
+  font-family: "Noto Serif SC";
+  src: url("assets/noto-serif-sc-400.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap; /* 字体加载前先用后备字体显示，不阻塞页面 */
+}
+
+@font-face {
+  font-family: "Noto Serif SC";
+  src: url("assets/noto-serif-sc-600.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+
+/* ---------- 2. 主题变量：全站配色只在这里改 ---------- */
+:root {
+  /* 覆盖 styles.css 里课程原有的三个变量，lesson-03-task.css 会自动跟随 */
+  --heading: #5fd6b8;     /* 主强调色：青绿（标题、链接、发光） */
+  --subheading: #e9c989;  /* 副强调色：香槟金（小标题、标签） */
+  --background: #0b1916;  /* 页面最深背景 */
+
+  /* 本文件新增的变量 */
+  --accent-blue: #4f9cf5;         /* 点缀蓝 */
+  --surface: rgba(255, 255, 255, 0.06);           /* 玻璃面 */
+  --surface-hover: rgba(255, 255, 255, 0.09);     /* 悬停玻璃面 */
+  --stroke: rgba(255, 255, 255, 0.13);            /* 玻璃描边 */
+  --stroke-glow: rgba(95, 214, 184, 0.45);        /* 悬停发光描边 */
+  --text: #e8f0ec;                /* 正文 */
+  --text-soft: #93a8a0;           /* 次要文字 */
+  --text-dim: #6d827a;            /* 弱文字 */
+  --shadow: 0 18px 44px rgba(0, 0, 0, 0.35);      /* 常规投影 */
+  --glow: 0 22px 48px rgba(0, 0, 0, 0.42), 0 0 30px rgba(95, 214, 184, 0.16); /* 悬停发光 */
+}
+
+/* ---------- 3. 全局基础 ---------- */
+/* 深色背景：青绿、蓝、金三团晕染铺在墨绿底上，模拟「液态」氛围光 */
+body {
+  font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC",
+    "Microsoft YaHei", sans-serif;
+  line-height: 1.75;
+  color: var(--text);
+  background-color: var(--background);
+  background-image:
+    radial-gradient(900px 520px at 12% -10%, rgba(95, 214, 184, 0.16), transparent 60%),
+    radial-gradient(1000px 560px at 90% 8%, rgba(79, 156, 245, 0.13), transparent 62%),
+    radial-gradient(1200px 700px at 50% 115%, rgba(233, 201, 137, 0.10), transparent 65%);
+  background-attachment: fixed; /* 滚动时晕染保持不动，更有氛围 */
+}
+
+/* 极淡的编织纹理铺满视口，给深色底增加一点纸面颗粒感 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.010) 0 1px, transparent 1px 4px);
+}
+
+/* 锚点跳转平滑滚动；用户系统关闭动效时自动还原 */
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* 选中文字：青绿底、深墨字 */
+::selection { background: rgba(95, 214, 184, 0.9); color: #0b1916; }
+
+/* 键盘操作可见的聚焦框 */
+a:focus-visible {
+  outline: 3px solid rgba(95, 214, 184, 0.55);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* 吸顶导航会遮住锚点目标，给栏目留出跳转呼吸空间 */
+.section,
+.hero { scroll-margin-top: 96px; }
+
+/* 恢复被起步样式隐藏的「跳到正文」链接：聚焦时出现在左上角 */
+.skip-link {
+  display: block;
+  position: absolute;
+  top: -60px;
+  left: 16px;
+  z-index: 120;
+  padding: 10px 18px;
+  background: rgba(11, 25, 22, 0.85);
+  backdrop-filter: blur(10px);
+  color: var(--heading);
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: top 180ms ease;
+}
+
+.skip-link:focus { top: 14px; }
+
+/* 滚动条：细长、圆角、跟随主题色 */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2c4a40, #1e332c);
+  border-radius: 8px;
+  border: 2px solid var(--background);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--heading); }
+
+/* 链接默认色：青绿，hover 亮起 + 下划线 */
+a { color: var(--heading); }
+a:hover { color: #7ee7cd; }
+
+/* ---------- 4. 顶部导航：深色玻璃吸顶 ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(11, 25, 22, 0.72); /* 深色半透明 + 模糊 = 玻璃 */
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* 品牌名：左侧渐变菱形 + 浅色文字 */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #e8f0ec;
+}
+
+.brand::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: linear-gradient(135deg, var(--heading), var(--accent-blue));
+  transform: rotate(45deg);
+  flex: none;
+  box-shadow: 0 0 10px rgba(95, 214, 184, 0.6);
+}
+
+/* 导航链接：悬停时玻璃胶囊 + 青绿文字 + 底部光点 */
+nav {
+  gap: 20px;
+}
+
+nav a {
+  color: var(--text-soft);
+  padding: 7px 14px;
+  border-radius: 10px;
+  transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+nav a:hover,
+nav a:focus-visible {
+  color: var(--heading);
+  background: rgba(95, 214, 184, 0.10);
+  box-shadow: inset 0 0 0 1px rgba(95, 214, 184, 0.18);
+}
+
+/* 第一个链接是「当前栏目」：青绿 + 底部下划线 */
+nav a:first-child {
+  color: var(--heading);
+  border-bottom: 2px solid var(--heading);
+}
+
+/* ---------- 5. 首屏 Hero：一整块液态玻璃面板 ---------- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03) 55%, rgba(95, 214, 184, 0.05));
+  border: 1px solid var(--stroke);
+  border-radius: 26px;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  padding: 56px 44px;
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* 右上、左下的氛围光晕（在玻璃面板内部） */
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero::before {
+  width: 340px;
+  height: 340px;
+  right: -120px;
+  top: -120px;
+  background: radial-gradient(circle, rgba(95, 214, 184, 0.14), transparent 70%);
+}
+
+.hero::after {
+  width: 280px;
+  height: 280px;
+  left: -110px;
+  bottom: -120px;
+  background: radial-gradient(circle, rgba(233, 201, 137, 0.10), transparent 70%);
+}
+
+.hero .container { position: relative; z-index: 1; }
+
+/* 主标题：青绿→蓝→金的渐变文字 */
+.hero-copy h1 {
+  font-size: clamp(42px, 5.5vw, 60px);
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero-copy h1 {
+    background: linear-gradient(120deg, #5fd6b8 15%, #6fa8ff 55%, #e9c989 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* 身份行下方：金色短装饰线（桌面靠左，移动端居中） */
+.hero-role {
+  font-size: 20px;
+  color: var(--text-soft);
+  margin: 0 0 6px;
+  padding-bottom: 14px;
+  position: relative;
+}
+
+.hero-role::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 56px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--subheading), transparent);
+}
+
+.hero-school {
+  font-size: 15px;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* 头像：玻璃圆环 + 旋转虚线光环，hover 时头像轻放大 */
+.hero-visual figure {
+  margin: 0;
+  position: relative;
+}
+
+.hero-visual figure::before {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border: 1.5px dashed rgba(95, 214, 184, 0.4);
+  border-radius: 50%;
+  animation: orbit 36s linear infinite;
+}
+
+.hero-visual figure::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -18px;
+  width: 170px;
+  height: 26px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.45), transparent 70%);
+}
+
+.hero-visual img {
+  display: block;
+  width: 220px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 0 1px rgba(95, 214, 184, 0.35), 0 26px 52px rgba(0, 0, 0, 0.5);
+  transition: transform 240ms ease, box-shadow 240ms ease;
+}
+
+.hero-visual figure:hover img {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 1px rgba(95, 214, 184, 0.6), 0 0 34px rgba(95, 214, 184, 0.28), 0 26px 52px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes orbit {
+  to { transform: rotate(360deg); }
+}
+
+/* 「学习方向」：胶囊徽章 + 引用竖线 */
+.research-direction .eyebrow {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(233, 201, 137, 0.12);
+  border: 1px solid rgba(233, 201, 137, 0.3);
+  color: var(--subheading);
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+
+.research-direction p {
+  font-size: 21px;
+  color: #d7ece4;
+  border-left: 3px solid rgba(95, 214, 184, 0.35);
+  padding-left: 16px;
+}
+
+/* 四个信息项：玻璃小卡 */
+.profile-details > div {
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: 14px;
+  padding: 16px 18px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.profile-details > div:hover {
+  transform: translateY(-3px);
+  border-color: var(--stroke-glow);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.32), 0 0 22px rgba(95, 214, 184, 0.12);
+}
+
+.profile-details span {
+  display: block;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--subheading);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.profile-details p {
+  margin: 0;
+  font-size: 18px;
+  color: #d7ece4;
+  white-space: nowrap;
+}
+
+/* 联系方式可点击拨号 */
+.contact-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.contact-link:hover { text-decoration: underline; color: var(--heading); }
+
+/* ---------- 6. 栏目标题：玻璃块 + 青绿竖条 + 自动序号 ---------- */
+body { counter-reset: heading; }
+
+.section-heading {
+  counter-increment: heading;
+  position: relative;
+}
+
+h2 {
+  position: relative;
+  padding-left: 18px;
+  padding-right: 64px;
+  color: #dff5ec;
+  background: linear-gradient(90deg, rgba(95, 214, 184, 0.13), transparent 70%);
+  border-radius: 10px;
+}
+
+h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 58%;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--heading), var(--accent-blue));
+}
+
+/* 右侧自动序号：01、02、03… 随栏目递增 */
+h2::after {
+  content: "0" counter(heading);
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: rgba(95, 214, 184, 0.5);
+}
+
+/* 栏目间分隔线 */
+.section {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* 栏目下的小字说明 */
+.works-notice {
+  color: var(--text-dim);
+  font-size: 15px;
+}
+
+/* ---------- 7. 内容卡片：液态玻璃 + 顶部色带 + 悬停发光 ---------- */
+.experience-item,
+.research-item,
+.teaching-group,
+.publication-group {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  padding: 22px 26px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+/* 卡片顶部：一条青绿渐变细带，像玻璃边缘的光 */
+.experience-item::before,
+.research-item::before,
+.teaching-group::before,
+.publication-group::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--heading), var(--accent-blue), transparent 75%);
+}
+
+/* 碰到卡片：上浮 + 青绿描边亮起 + 外圈发光 */
+.experience-item:hover,
+.research-item:hover,
+.teaching-group:hover,
+.publication-group:hover {
+  transform: translateY(-5px);
+  background: var(--surface-hover);
+  border-color: var(--stroke-glow);
+  box-shadow: var(--glow);
+}
+
+/* 经历标题：标题在左、时间胶囊在右 */
+.experience-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+.experience-heading time {
+  flex: none;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgba(95, 214, 184, 0.12);
+  border: 1px solid rgba(95, 214, 184, 0.3);
+  color: var(--heading);
+  font-size: 14px;
+}
+
+.research-item h3 time {
+  color: var(--subheading);
+  font-weight: 600;
+  font-size: 15px;
+  margin-right: 8px;
+}
+
+.research-item h3 { font-size: 22px; margin: 0 0 8px; color: #dff5ec; }
+
+/* 学习与实践、学习记录 */
+.teaching-group,
+.publication-group { padding: 26px 30px; }
+
+.teaching-group h3,
+.publication-group h3 {
+  margin-top: 0;
+  font-size: 21px;
+  color: #dff5ec;
+}
+
+.teaching-group ol,
+.references {
+  padding-left: 22px;
+  margin: 0;
+}
+
+.teaching-group li,
+.references li { margin: 10px 0; color: var(--text-soft); }
+
+/* 列表序号使用主题色 */
+.teaching-group ol li::marker,
+.references li::marker {
+  color: var(--heading);
+  font-weight: 600;
+}
+
+/* ---------- 8. 技能列表：三列玻璃卡 ---------- */
+.skills-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.skills-list li {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  padding: 22px 24px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.skills-list li::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--subheading), var(--accent-blue), transparent 75%);
+}
+
+.skills-list li:hover {
+  transform: translateY(-5px);
+  background: var(--surface-hover);
+  border-color: var(--stroke-glow);
+  box-shadow: var(--glow);
+}
+
+.skills-list strong {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 6px;
+  color: var(--subheading);
+}
+
+.skills-list li p { margin: 0; color: var(--text-soft); }
+
+/* ---------- 9. 作品卡片：玻璃卡 + 封面悬停遮罩 ---------- */
+/* 作品网格两列/一列仍由 lesson-03-task.css 负责，这里只增强细节 */
+.work-card {
+  background: var(--surface);
+  border-color: var(--stroke);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.work-card:hover,
+.work-card:focus-within {
+  background: var(--surface-hover);
+  border-color: var(--stroke-glow);
+  box-shadow: var(--glow);
+}
+
+/* 封面：深色衬底 + 图片悬停缩放 + 底部浮现「查看作品」 */
+.work-cover {
+  position: relative;
+  background: #14231e;
+}
+
+.work-cover img {
+  transition: transform 400ms ease;
+}
+
+.work-card:hover .work-cover img,
+.work-card:focus-within .work-cover img { transform: scale(1.04); }
+
+.work-cover::after {
+  content: "查看作品 ↗";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 22px;
+  text-align: right;
+  color: #eafff7;
+  font-size: 14px;
+  letter-spacing: 1px;
+  background: linear-gradient(180deg, transparent, rgba(6, 18, 14, 0.78));
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 240ms ease, transform 240ms ease;
+}
+
+.work-card:hover .work-cover::after,
+.work-card:focus-within .work-cover::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.work-copy h3 {
+  font-size: 20px;
+  margin: 0 0 6px;
+  color: #dff5ec;
+  transition: color 180ms ease;
+}
+
+.work-card:hover .work-copy h3 { color: var(--heading); }
+
+.work-copy p { color: var(--text-soft); margin: 0; }
+
+/* ---------- 10. 页脚：玻璃 + 顶部金色渐变线 ---------- */
+footer {
+  margin-top: 72px;
+  position: relative;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+footer::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--subheading), transparent);
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: center;
+  gap: 36px;
+  padding: 26px 0;
+}
+
+footer a {
+  color: var(--text-soft);
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+footer a:hover { color: var(--heading); }
+
+/* ---------- 11. 响应式细节 ---------- */
+/* 900px 以下：导航允许换行 */
+@media (max-width: 900px) {
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
+
+  nav {
+    flex-wrap: wrap;
+    gap: 8px 14px;
+  }
+
+  .brand { font-size: 24px; }
+
+  .skills-list { grid-template-columns: 1fr; }
+}
+
+/* 640px 以下：首屏居中、标题缩小、面板内边距收窄 */
+@media (max-width: 640px) {
+  .hero { padding: 36px 22px; }
+
+  .hero-top { align-items: center; }
+
+  .hero-copy { text-align: center; }
+
+  .hero-role::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .hero-visual { margin-top: 12px; }
+
+  .hero-visual img { width: 180px; height: 180px; }
+
+  .profile-details span,
+  .profile-details p { white-space: normal; }
+
+  .section { margin-top: 24px; }
+
+  /* 小屏隐藏标题序号，给标题留足空间 */
+  .section-heading h2 { font-size: 26px; padding-right: 16px; }
+
+  .section-heading h2::after { display: none; }
+}
+
+/* ---------- 12. 尊重系统「减少动效」偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero-visual figure::before { animation: none; }
+
+  nav a,
+  .profile-details > div,
+  .experience-item,
+  .research-item,
+  .teaching-group,
+  .publication-group,
+  .skills-list li,
+  .work-cover img,
+  .work-cover::after,
+  .work-copy h3,
+  .hero-visual img,
+  .skip-link,
+  footer a,
+  a { transition: none; }
+}
+
+
+/* ---------- 13. 家乡标签：可点击跳转阳江百科 ---------- */
+.hometown {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hometown .eyebrow {
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--subheading);
+  font-weight: 600;
+}
+
+.hometown-link {
+  color: var(--heading);
+  text-decoration: none;
+  padding: 6px 16px;
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  background: var(--surface);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.hometown-link::after {
+  content: " ↗";
+}
+
+.hometown-link:hover,
+.hometown-link:focus-visible {
+  color: #7ee7cd;
+  border-color: var(--stroke-glow);
+  box-shadow: 0 0 18px rgba(95, 214, 184, 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hometown-link { transition: none; }
+}
+
+/* ---------- 14. 小创意：问候语 / 鼠标光斑 / 滚动渐现 / 回顶按钮 ---------- */
+/* 时间问候语（内容由 interactions.js 填充） */
+.greeting {
+  margin: 0 0 14px;
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: var(--subheading);
+  min-height: 24px;
+}
+
+/* 鼠标跟随光斑：一层极淡的青绿-蓝氛围光，不遮挡内容 */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(95, 214, 184, 0.10), rgba(79, 156, 245, 0.05) 40%, transparent 70%);
+}
+
+/* 滚动渐现：JS 启用时元素先隐藏，进入视口后淡入上浮 */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 640ms ease, transform 640ms ease;
+}
+
+.js .reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* 悬浮「回到顶部」按钮 */
+.to-top {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 70;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--stroke);
+  background: rgba(11, 25, 22, 0.72);
+  color: var(--heading);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: opacity 220ms ease, transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.to-top.visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.to-top:hover {
+  border-color: var(--stroke-glow);
+  box-shadow: var(--glow);
+}
+
+@media (max-width: 640px) {
+  .to-top { right: 16px; bottom: 16px; width: 46px; height: 46px; }
+  .greeting { text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal, .to-top { transition: none; }
+}
+
+/* ---------- 15. 差异化排版：经历=时间线 / 竞赛=奖牌式 / 技能=进度条 ---------- */
+
+/* 经历：时间线（左侧竖线 + 发光节点圆点） */
+#experience .section-content {
+  position: relative;
+  padding-left: 40px;
+}
+
+#experience .section-content::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--heading), rgba(95, 214, 184, 0.12));
+}
+
+.experience-item {
+  position: relative;
+  overflow: visible;
+}
+
+.experience-item::before {
+  content: "";
+  position: absolute;
+  right: auto;
+  left: -34px;
+  top: 24px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--heading);
+  box-shadow: 0 0 0 4px rgba(95, 214, 184, 0.18), 0 0 14px rgba(95, 214, 184, 0.45);
+}
+
+/* 竞赛：奖牌式（奖项等级用不同配色） */
+.award-gold   { --award: #e9c989; }
+.award-teal   { --award: #5fd6b8; }
+.award-bronze { --award: #d09a6a; }
+
+.award::before {
+  height: 3px;
+  background: linear-gradient(90deg, var(--award), transparent 80%);
+}
+
+.award h3 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.award h3 time {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--award);
+  color: #0b1916;
+  font-weight: 700;
+  font-size: 14px;
+  margin-right: 0;
+}
+
+/* 技能：进度条 */
+.skill-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.skill-level {
+  font-size: 13px;
+  color: var(--subheading);
+  letter-spacing: 1px;
+}
+
+.skill-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.skill-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--heading), var(--accent-blue));
+}
+
+.skills-list li p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-soft);
+}

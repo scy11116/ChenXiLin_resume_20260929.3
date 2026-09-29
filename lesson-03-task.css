@@ -1,0 +1,206 @@
+/*
+ * 项目 1 · 第 3 课学生任务文件
+ * 只改标有 TODO 的 5 行。保存后在浏览器按 Ctrl+R 查看结果。
+ */
+/* 使用类选择器 portfolio-list */
+.portfolio-list {
+  /* TODO A1：把 block 改成 grid。
+   * display 决定元素内部怎样排列；block 是普通块级布局，子元素通常从上到下排列。
+   * grid 是 CSS 网格布局。启用后，下一行 grid-template-columns 才能控制列数。
+   * 修改结果：作品列表从普通单列容器变成可以设置行和列的网格容器。
+   */
+  display: grid;
+
+  /* TODO A2：改成 repeat(2, minmax(0, 1fr))。
+   * grid-template-columns 用来规定网格有几列，以及每一列有多宽。
+   * repeat(2, X) 等于把 X 连续写两次，因此这里建立两列。
+   * fr 是 fraction（份额）的缩写，表示分配容器剩余空间时所占的份数。
+   * 1fr 就是“占 1 份剩余宽度”；两列都是 1fr，所以两列各占一半，不是固定 1 像素。
+   * minmax(0, 1fr) 表示该列最小可以缩到 0，最大占 1 份，长文字也不易把页面撑出横向滚动条。
+   * 修改结果：桌面宽度下，一行显示两张等宽作品卡片。
+   */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 30px;
+}
+
+.work-card {
+  overflow: hidden;
+  border: 1px solid #ded8cb;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(52, 60, 56, 0.08);
+  /* TODO B1：改成 transform 180ms ease, box-shadow 180ms ease。
+   * transition 表示“属性发生变化时怎样播放过渡动画”。
+   * transform 和 box-shadow 是要播放动画的两个属性；逗号表示分别设置两组动画。
+   * 180ms 是 180 毫秒，即 0.18 秒；ease 表示开始和结束较慢、中间较快。
+   * 修改结果：鼠标移入和移出时，卡片位移与阴影会平滑变化。
+   */
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.work-card a { display: block; color: inherit; text-decoration: none; }
+.work-cover { display: block; aspect-ratio: 3 / 2; overflow: hidden; background: #edf1ea; }
+.work-cover img { width: 100%; height: 100%; object-fit: cover; }
+.work-copy { padding: 20px 22px 24px; }
+
+.work-card:hover,
+.work-card:focus-within {
+  /* TODO B2：改成 translateY(-4px)。
+   * transform 用来改变元素的视觉位置、大小或角度，而不重新挤动周围卡片。
+   * translateY 表示沿垂直方向移动；Y 轴正方向向下，负数表示向上。
+   * -4px 表示向上移动 4 个 CSS 像素；px 是屏幕布局常用的长度单位。
+   * 修改结果：鼠标悬停或键盘聚焦卡片内链接时，卡片轻微上浮。
+   */
+  transform: translateY(-4px);
+  box-shadow: 0 16px 38px rgba(52, 60, 56, 0.14);
+}
+
+@media (max-width: 640px) {
+  .portfolio-list {
+    /* TODO B3：改成 1fr。
+     * @media (max-width: 640px) 表示：只有浏览器可视区域宽度不超过 640px 时才执行这里的规则。
+     * max-width 是“最大宽度条件”，640px 是常用的小屏教学分界值，并不表示所有手机物理宽度都正好是 640px。
+     * 这里只写一个 1fr，代表网格只有一列；这一列取得全部可用宽度。
+     * 修改结果：小屏幕从每行两张卡片变为每行一张，文字和图片更容易阅读。
+     */
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-card { transition: none; }
+}
+
+/* ===== 顶部导航栏（对照图片效果）===== */
+
+/* 1. 导航栏整体：加底部通栏细线，上下留点呼吸空间 */
+.site-header {
+  border-bottom: 1px solid #e1ddd3;   /* 那条通栏细线 */
+  padding: 18px 0;                    /* 上下内边距 */
+}
+
+/* 2. 让左边品牌和右边导航"一左一右"排开 */
+.header-inner {
+  display: flex;                       /* 弹性布局：子元素排成一行 */
+  justify-content: space-between;     /* 两端对齐：brand 靠左，nav 靠右 */
+  align-items: baseline;               /* 文字按基线对齐，不会一大一小错位 */
+}
+
+/* 3. 左侧品牌名：大字 */
+.brand {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--heading);               /* 用你 styles.css 里已经定义的深绿变量 */
+  text-decoration: none;               /* 去掉链接默认下划线 */
+}
+
+/* 4. 品牌名旁边的小字拼音：小一号、灰色、字间距拉开 */
+.brand span {
+  font-size: 14px;
+  font-weight: normal;
+  color: #8a8f8a;
+  letter-spacing: 2px;                 /* 字母之间拉开一点，像 NIE WEI 那种效果 */
+  margin-left: 8px;
+}
+
+/* 5. 右侧导航：横向一排，链接之间用 gap 控制间距 */
+nav {
+  display: flex;
+  gap: 32px;                           /* 每个链接之间的距离 */
+}
+
+/* 覆盖 styles.css 里旧的 nav a { margin-right: 16px } */
+nav a {
+  margin-right: 0;
+  text-decoration: none;               /* 去掉默认下划线 */
+  color: #6d746d;                      /* 未选中：灰色 */
+  padding: 4px 0;
+}
+
+/* 6. 鼠标移上去：颜色加深 */
+nav a:hover {
+  color: var(--heading);
+}
+
+/* 7. 当前选中项（第一个"关于"）：深色文字 + 底部短下划线 */
+nav a:first-child {
+  color: var(--heading);
+  border-bottom: 2px solid var(--heading);
+}
+
+/* ===== 首屏：文字在左、头像在右 ===== */
+.hero-top {
+  display: flex;                  /* 让里面的两块排成一行 */
+  justify-content: space-between; /* 把文字推到最左、头像推到最右 */
+  align-items: center;            /* 文字和头像在垂直方向居中对齐 */
+  gap: 40px;                      /* 文字块和头像之间留 40px 距离 */
+}
+
+/* 手机窄屏：改回上下排列，避免挤在一起 */
+@media (max-width: 640px) {
+  .hero-top {
+    flex-direction: column;       /* 从横向改成竖向 */
+    align-items: flex-start;      /* 左对齐，不再居中 */
+  }
+}
+
+/* ===== 学习方向：突出小标题 ===== */
+.research-direction .eyebrow {
+  display: block;
+  font-size: 14px;
+  letter-spacing: 3px;              /* 字间距拉开，像标签 */
+  color: var(--subheading);          /* 用 styles.css 里的棕色变量 */
+  margin-bottom: 6px;
+}
+
+.research-direction p {
+  margin: 0;
+  font-size: 20px;
+  color: var(--heading);            /* 正文加深，和小标签拉开层次 */
+  line-height: 1.7;
+}
+
+/* ===== 四个信息项：并排 4 列 ===== */
+.profile-details {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);  /* 桌面：4 个格子并排 */
+  gap: 24px;
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid #e1ddd3;          /* 和"学习方向"之间加一条细线 */
+}
+
+.profile-details > div {
+  margin: 0;                  /* 覆盖 styles.css 里旧的 margin: 12px 0 */
+}
+
+/* 小标签：学习阶段 / 所在城市 / 联系 / 学校地址 */
+.profile-details span {
+  display: block;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: #8a8f8a;             /* 淡灰 */
+  margin-bottom: 6px;
+}
+
+/* 内容：在校学习 / 珠海 / ... */
+.profile-details p {
+  margin: 0;
+  font-size: 18px;
+  color: var(--heading);      /* 深色突出 */
+  white-space: nowrap;
+}
+
+/* 平板：变成 2 列 */
+@media (max-width: 900px) {
+  .profile-details {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 手机：变回 1 列，避免挤 */
+@media (max-width: 640px) {
+  .profile-details {
+    grid-template-columns: 1fr;
+  }
+}
